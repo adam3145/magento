@@ -18,25 +18,19 @@ RUN apt-get -qy install git vim-tiny curl wget pwgen \
   apache2 libapache2-mod-php5 php5-mysql php5-gd php5-curl \
   python-setuptools && \
   apt-get -q autoclean
+  sudo apt-get install nano
 
-# drush: instead of installing a package, pull via composer into /opt/composer
-# http://www.whaaat.com/installing-drush-7-using-composer
-RUN curl -sS https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer && \
-    COMPOSER_HOME=/opt/composer composer --quiet global require drush/drush:dev-master && \
-    ln -s /opt/composer/vendor/drush/drush/drush /bin/drush
-# Add drush comand https://www.drupal.org/project/registry_rebuild
-RUN wget http://ftp.drupal.org/files/projects/registry_rebuild-7.x-2.2.tar.gz && \
-    tar xzf registry_rebuild-7.x-2.2.tar.gz && \
-    rm registry_rebuild-7.x-2.2.tar.gz && \
-    mv registry_rebuild /opt/composer/vendor/drush/drush/commands
-#RUN sed -i '1i export PATH="$HOME/.composer/vendor/bin:$PATH"' /root/.bashrc
-RUN /bin/drush --version
-RUN /bin/drush dl drush_language-7.x
+#. Download composer
+curl -s https://getcomposer.org/installer | php
+#. Fetch package and install dependencies via composer create-project
+php -f ./composer.phar -- create-project n98/magerun <folder>
+#. Run cli.php
+php -f <folder>/bin/n98-magerun --
+
 
 # Option: Make mysql listen on the outside, might be useful for backups
 # but adds a security risk.
-#RUN sed -i "s/^bind-address/#bind-address/" /etc/mysql/my.cnf
+# RUN sed -i "s/^bind-address/#bind-address/" /etc/mysql/my.cnf
 ADD files/root/.my.cnf.sample /root/.my.cnf.sample
 
 # Sample backup script
